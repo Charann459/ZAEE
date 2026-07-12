@@ -1,0 +1,62 @@
+version: '3.8'
+
+services:
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.4.0
+    container_name: zookeeper
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+
+  kafka:
+    image: confluentinc/cp-kafka:7.4.0
+    container_name: kafka
+    depends_on:
+      - zookeeper
+    ports:
+      - "9092:9092"
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: 'zookeeper:2181'
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:29092,PLAINTEXT_HOST://localhost:9092
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
+
+  redis:
+    image: redis:7-alpine
+    container_name: redis
+    ports:
+      - "6379:6379"
+
+  postgres:
+    image: postgres:15-alpine
+    container_name: postgres
+    environment:
+      POSTGRES_USER: zaee
+      POSTGRES_PASSWORD: zaee_password
+      POSTGRES_DB: zaee
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./migrations:/docker-entrypoint-initdb.d
+
+  engine:
+    build:
+      context: ../engine
+      dockerfile: Dockerfile
+    container_name: zaee-engine
+    depends_on:
+      - kafka
+      - redis
+      - postgres
+    environment:
+      - KAFKA_BROKERS=kafka:29092
+      - INGEST_TOPIC=zaee_ingest
+      - OUTPUT_TOPIC=zaee_output
+      - REDIS_URL=redis://redis:6379
+      - DATABASE_URL=postgres://zaee:zaee_password@postgres:5432/zaee?sslmode=disable
+    volumes:
+      - ../config.yaml:/app/config.yaml
+    restart: on-failure

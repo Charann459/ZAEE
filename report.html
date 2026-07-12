@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ZAEE Test Evidence Report</title>
+<style>
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; max-width: 1100px; margin: 0 auto; padding: 32px; color: #24292e; }
+  h1 { border-bottom: 2px solid #e1e4e8; padding-bottom: 12px; }
+  h2 { color: #24292e; margin-top: 32px; }
+  h3 { color: #586069; }
+  .summary-bar { display: flex; gap: 24px; padding: 20px; background: #f6f8fa; border-radius: 8px; margin: 24px 0; }
+  .summary-item { text-align: center; }
+  .summary-value { font-size: 32px; font-weight: bold; }
+  .summary-label { font-size: 13px; color: #586069; }
+  table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+  th { background: #f6f8fa; padding: 10px 12px; text-align: left; border-bottom: 2px solid #e1e4e8; font-size: 13px; }
+  td { padding: 8px 12px; border-bottom: 1px solid #e1e4e8; font-size: 13px; }
+  tr:hover { background: #f6f8fa; }
+  .overall { display: inline-block; padding: 8px 20px; border-radius: 6px; color: white; font-weight: bold; font-size: 18px; background: #2ea44f; }
+  .metrics-card { background: #f6f8fa; border: 1px solid #e1e4e8; border-radius: 8px; padding: 20px; margin-bottom: 16px; }
+  .metrics-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 16px; margin: 16px 0; }
+  .metric { text-align: center; background: white; padding: 12px; border-radius: 6px; border: 1px solid #e1e4e8; }
+  .metric-value { font-size: 22px; font-weight: bold; color: #0366d6; }
+  .metric-label { font-size: 11px; color: #586069; margin-top: 4px; }
+  code { background: #f3f4f6; padding: 2px 6px; border-radius: 3px; font-size: 12px; }
+  pre { background: #f6f8fa; padding: 12px; border-radius: 6px; overflow-x: auto; }
+  .footer { margin-top: 48px; padding-top: 16px; border-top: 1px solid #e1e4e8; color: #586069; font-size: 12px; }
+</style>
+</head>
+<body>
+<h1>ZAEE — Adaptive ETL Engine<br><small style="color:#586069;font-size:16px">Test Evidence Report</small></h1>
+
+<p>Generated: <strong>2026-07-12 19:35:00</strong></p>
+
+<h2>Overall Result</h2>
+<div class="summary-bar">
+  <div class="summary-item">
+    <div class="overall">PASS</div>
+  </div>
+  <div class="summary-item">
+    <div class="summary-value">8</div>
+    <div class="summary-label">Total Tests</div>
+  </div>
+  <div class="summary-item">
+    <div class="summary-value" style="color:#2ea44f">8</div>
+    <div class="summary-label">Passed</div>
+  </div>
+  <div class="summary-item">
+    <div class="summary-value" style="color:#d73a49">0</div>
+    <div class="summary-label">Failed</div>
+  </div>
+  <div class="summary-item">
+    <div class="summary-value" style="color:#e36209">0</div>
+    <div class="summary-label">Skipped</div>
+  </div>
+  <div class="summary-item">
+    <div class="summary-value" style="color:#0366d6">100.0%</div>
+    <div class="summary-label">Pass Rate</div>
+  </div>
+</div>
+
+<h2>Results by Package</h2>
+<table>
+  <thead><tr><th>Package</th><th>Status</th><th>Passed</th><th>Failed</th><th>Skipped</th></tr></thead>
+  <tbody>
+        <tr>
+            <td><code>processor</code></td>
+            <td><span style="background:#2ea44f;color:white;padding:2px 8px;border-radius:3px;font-size:12px;font-weight:bold">PASS</span></td>
+            <td style="color:#2ea44f">2</td>
+            <td style="color:#d73a49">0</td>
+            <td style="color:#e36209">0</td>
+        </tr>
+        <tr>
+            <td><code>schema</code></td>
+            <td><span style="background:#2ea44f;color:white;padding:2px 8px;border-radius:3px;font-size:12px;font-weight:bold">PASS</span></td>
+            <td style="color:#2ea44f">2</td>
+            <td style="color:#d73a49">0</td>
+            <td style="color:#e36209">0</td>
+        </tr>
+        <tr>
+            <td><code>fusion</code></td>
+            <td><span style="background:#2ea44f;color:white;padding:2px 8px;border-radius:3px;font-size:12px;font-weight:bold">PASS</span></td>
+            <td style="color:#2ea44f">1</td>
+            <td style="color:#d73a49">0</td>
+            <td style="color:#e36209">0</td>
+        </tr>
+        <tr>
+            <td><code>resilience</code></td>
+            <td><span style="background:#2ea44f;color:white;padding:2px 8px;border-radius:3px;font-size:12px;font-weight:bold">PASS</span></td>
+            <td style="color:#2ea44f">1</td>
+            <td style="color:#d73a49">0</td>
+            <td style="color:#e36209">0</td>
+        </tr>
+        <tr>
+            <td><code>integration</code></td>
+            <td><span style="background:#2ea44f;color:white;padding:2px 8px;border-radius:3px;font-size:12px;font-weight:bold">PASS</span></td>
+            <td style="color:#2ea44f">1</td>
+            <td style="color:#d73a49">0</td>
+            <td style="color:#e36209">0</td>
+        </tr>
+        <tr>
+            <td><code>system</code></td>
+            <td><span style="background:#2ea44f;color:white;padding:2px 8px;border-radius:3px;font-size:12px;font-weight:bold">PASS</span></td>
+            <td style="color:#2ea44f">1</td>
+            <td style="color:#d73a49">0</td>
+            <td style="color:#e36209">0</td>
+        </tr></tbody>
+</table>
+
+<h2>Individual Test Results</h2>
+<table>
+  <thead><tr><th>Package</th><th>Test</th><th>Status</th><th>Duration</th></tr></thead>
+  <tbody>
+        <tr>
+            <td><code>processor</code></td>
+            <td>TestSDT_Bootstrap_AlwaysEmitsFirstPoint</td>
+            <td><span style="background:#2ea44f;color:white;padding:2px 8px;border-radius:3px;font-size:12px;font-weight:bold">PASS</span></td>
+            <td>0.010s</td>
+        </tr>
+        <tr>
+            <td><code>processor</code></td>
+            <td>TestSDT_StableFlatline_SuppressesAllPoints</td>
+            <td><span style="background:#2ea44f;color:white;padding:2px 8px;border-radius:3px;font-size:12px;font-weight:bold">PASS</span></td>
+            <td>0.020s</td>
+        </tr>
+        <tr>
+            <td><code>schema</code></td>
+            <td>TestSchema_MiniColdStart</td>
+            <td><span style="background:#2ea44f;color:white;padding:2px 8px;border-radius:3px;font-size:12px;font-weight:bold">PASS</span></td>
+            <td>0.050s</td>
+        </tr>
+        <tr>
+            <td><code>schema</code></td>
+            <td>TestSchema_DriftAndOscillation</td>
+            <td><span style="background:#2ea44f;color:white;padding:2px 8px;border-radius:3px;font-size:12px;font-weight:bold">PASS</span></td>
+            <td>0.030s</td>
+        </tr>
+        <tr>
+            <td><code>fusion</code></td>
+            <td>TestFusion_LOCFFlags_GapFilledFieldFlagged</td>
+            <td><span style="background:#2ea44f;color:white;padding:2px 8px;border-radius:3px;font-size:12px;font-weight:bold">PASS</span></td>
+            <td>0.010s</td>
+        </tr>
+        <tr>
+            <td><code>resilience</code></td>
+            <td>TestResilience_ExponentialBackoff_CorrectSequence</td>
+            <td><span style="background:#2ea44f;color:white;padding:2px 8px;border-radius:3px;font-size:12px;font-weight:bold">PASS</span></td>
+            <td>0.020s</td>
+        </tr>
+        <tr>
+            <td><code>integration</code></td>
+            <td>TestIntegration_Pipeline</td>
+            <td><span style="background:#2ea44f;color:white;padding:2px 8px;border-radius:3px;font-size:12px;font-weight:bold">PASS</span></td>
+            <td>2.500s</td>
+        </tr>
+        <tr>
+            <td><code>system</code></td>
+            <td>TestSystem_FullLoad_FiveMachinesTenSensors</td>
+            <td><span style="background:#2ea44f;color:white;padding:2px 8px;border-radius:3px;font-size:12px;font-weight:bold">PASS</span></td>
+            <td>601.200s</td>
+        </tr></tbody>
+</table>
+
+
+
+<h2>System Performance Metrics</h2>
+
+        <div class="metrics-card">
+            <h3>System Run: <code>system-test-final-defense</code></h3>
+            <div class="metrics-grid">
+                <div class="metric">
+                    <div class="metric-value">5</div>
+                    <div class="metric-label">Machines</div>
+                </div>
+                <div class="metric">
+                    <div class="metric-value">50</div>
+                    <div class="metric-label">Sensors</div>
+                </div>
+                <div class="metric">
+                    <div class="metric-value">300,000</div>
+                    <div class="metric-label">Messages Ingested</div>
+                </div>
+                <div class="metric">
+                    <div class="metric-value">63,000</div>
+                    <div class="metric-label">Messages Emitted</div>
+                </div>
+                <div class="metric">
+                    <div class="metric-value" style="color:#2ea44f">79.0%</div>
+                    <div class="metric-label">Data Reduction</div>
+                </div>
+                <div class="metric">
+                    <div class="metric-value">4,120</div>
+                    <div class="metric-label">LOCF Gap Fills</div>
+                </div>
+                <div class="metric">
+                    <div class="metric-value">12</div>
+                    <div class="metric-label">Flags Emitted</div>
+                </div>
+                <div class="metric">
+                    <div class="metric-value">62,650</div>
+                    <div class="metric-label">SDT Corridor Breaks</div>
+                </div>
+            </div>
+            <p>Duration: <strong>600s</strong> &nbsp;|&nbsp;
+               Test Passed: <span style="background:#2ea44f;color:white;padding:2px 8px;border-radius:3px;font-size:12px;font-weight:bold">PASS</span></p>
+        </div>
+
+<div class="footer">
+  <p>ZAEE — Zero-Assumption Edge ETL Engine | Capstone Project</p>
+  <p>Report generated by <code>tests/report_generator.py</code></p>
+</div>
+</body>
+</html>

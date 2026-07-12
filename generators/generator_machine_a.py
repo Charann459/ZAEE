@@ -28,16 +28,19 @@ def main():
             for row in reader:
                 # Convert string values to appropriate types
                 fields = {k: float(v) if '.' in v else int(v) for k, v in row.items() if k != 'Fault_Type'}
+                # Split fields to simulate asynchronous multi-rate sensors for Fusion
+                for k, v in fields.items():
+                    payload = {
+                        "sensor_id": "Machine-A",
+                        "timestamp": datetime.now(timezone.utc).isoformat(),
+                        "fields": {k: v},
+                        "target_label": {"Fault_Type": int(row['Fault_Type'])}
+                    }
+                    print(json.dumps(payload))
+                    time.sleep(0.01) # 10ms jitter between fields
                 
-                payload = {
-                    "sensor_id": "Machine-A",
-                    "timestamp": datetime.now(timezone.utc).isoformat(),
-                    "fields": fields,
-                    "target_label": {"Fault_Type": int(row['Fault_Type'])}
-                }
-                
-                print(json.dumps(payload))
-                time.sleep(actual_sleep)
+                # Sleep the remainder of the actual_sleep
+                time.sleep(max(0, actual_sleep - (len(fields) * 0.01)))
                 
     except KeyboardInterrupt:
         print("\n[Machine-A] Stopped manually.")

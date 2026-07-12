@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ZAEE Dashboard</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="app-container">
+        <header class="header">
+            <div class="logo">ZAEE Engine</div>
+            <nav class="nav">
+                <button class="tab-btn active" data-target="active-flags">Active Flags <span id="active-badge" class="badge">0</span></button>
+                <button class="tab-btn" data-target="audit-trail">Audit Trail</button>
+            </nav>
+        </header>
+
+        <main class="content">
+            <section id="active-flags" class="tab-content active">
+                <div class="section-header">
+                    <h2>Live Anomalies</h2>
+                    <p>Flags currently requiring human attention.</p>
+                </div>
+                <div id="flags-grid" class="grid">
+                    <!-- Active flags injected here via JS -->
+                </div>
+            </section>
+
+            <section id="audit-trail" class="tab-content">
+                <div class="section-header">
+                    <h2>Audit Trail</h2>
+                    <p>Historical log of acknowledged incidents.</p>
+                </div>
+                <div class="table-container">
+                    <table class="audit-table">
+                        <thead>
+                            <tr>
+                                <th>Timestamp</th>
+                                <th>Sensor / Field</th>
+                                <th>Flag Type</th>
+                                <th>Acknowledged By</th>
+                                <th>Note</th>
+                            </tr>
+                        </thead>
+                        <tbody id="audit-tbody">
+                            <!-- Acknowledged flags injected here via JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Modal for Acknowledgment -->
+    <div id="ack-modal" class="modal hidden">
+        <div class="modal-content glass">
+            <h3>Acknowledge Flag</h3>
+            <p id="modal-flag-info" class="modal-meta"></p>
+            <form id="ack-form">
+                <input type="hidden" id="ack-flag-id">
+                
+                <div class="form-group">
+                    <label for="ack-user">Your Name</label>
+                    <input type="text" id="ack-user" required placeholder="Enter your name">
+                </div>
+
+                <div class="form-group">
+                    <label for="ack-note">Resolution Note</label>
+                    <textarea id="ack-note" required placeholder="Describe why this flag occurred and how it was resolved..."></textarea>
+                </div>
+
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal()">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Acknowledge</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>

@@ -110,7 +110,7 @@ Make the engine production-credible rather than a demo script.
 
 ---
 
-## Phase 8 — Flagging and Dashboard
+## Phase 8 — Flagging and Dashboard (Completed)
 
 Build the flag emission logic and the human-facing review layer. Sequenced near the end since flags depend on most other components already existing to have something to flag.
 
@@ -123,7 +123,7 @@ Build the flag emission logic and the human-facing review layer. Sequenced near 
 
 ---
 
-## Phase 9 — Partial Updates and Schema Drift
+## Phase 9 — Partial Updates and Schema Drift (Completed)
 
 One of the harder architectural pieces, intentionally sequenced after the core system is stable.
 
@@ -135,7 +135,7 @@ One of the harder architectural pieces, intentionally sequenced after the core s
 
 ---
 
-## Phase 10 — Testing and Defense Prep
+## Phase 10 — Testing and Defense Prep (Completed)
 
 **Deliverables:**
 - Load testing using Phase 0's generators, including multi-source mode at scale

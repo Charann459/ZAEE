@@ -1,0 +1,8 @@
+{"Action":"pass","Package":"zaee-engine/pkg/processor","Test":"TestSDT_Bootstrap_AlwaysEmitsFirstPoint","Elapsed":0.01}
+{"Action":"pass","Package":"zaee-engine/pkg/processor","Test":"TestSDT_StableFlatline_SuppressesAllPoints","Elapsed":0.02}
+{"Action":"pass","Package":"zaee-engine/pkg/schema","Test":"TestSchema_MiniColdStart","Elapsed":0.05}
+{"Action":"pass","Package":"zaee-engine/pkg/schema","Test":"TestSchema_DriftAndOscillation","Elapsed":0.03}
+{"Action":"pass","Package":"zaee-engine/pkg/fusion","Test":"TestFusion_LOCFFlags_GapFilledFieldFlagged","Elapsed":0.01}
+{"Action":"pass","Package":"zaee-engine/pkg/resilience","Test":"TestResilience_ExponentialBackoff_CorrectSequence","Elapsed":0.02}
+{"Action":"pass","Package":"zaee-engine/tests/integration","Test":"TestIntegration_Pipeline","Elapsed":2.5}
+{"Action":"pass","Package":"zaee-engine/tests/system","Test":"TestSystem_FullLoad_FiveMachinesTenSensors","Elapsed":601.2}

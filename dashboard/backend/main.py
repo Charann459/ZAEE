@@ -1,0 +1,177 @@
+import os
+import json
+import asyncio
+from datetime import datetime, timezone
+from typing import Optional, List
+
+from fastapi import FastAPI, HTTPException, Request
+from fastapi.responses import StreamingResponse
+from fastapi.staticfiles import StaticFiles
+from pydantic import BaseModel
+import asyncpg
+from aiokafka import AIOKafkaConsumer
+
+# Configuration
+KAFKA_BROKER = os.getenv("KAFKA_BROKER", "localhost:9092")
+KAFKA_TOPIC = os.getenv("KAFKA_TOPIC", "zaee_output")
+DB_URL = os.getenv("DB_URL", "postgresql://zaee:password@localhost:5432/zaee")
+
+class EventBus:
+    def __init__(self):
+        self.subscribers: List[asyncio.Queue] = []
+
+    async def publish(self, event: dict):
+        for q in self.subscribers:
+            await q.put(event)
+
+    def subscribe(self) -> asyncio.Queue:
+        q = asyncio.Queue()
+        self.subscribers.append(q)
+        return q
+
+    def unsubscribe(self, q: asyncio.Queue):
+        if q in self.subscribers:
+            self.subscribers.remove(q)
+
+event_bus = EventBus()
+db_pool = None
+
+app = FastAPI(title="ZAEE Dashboard API")
+
+class AcknowledgeRequest(BaseModel):
+    user: str
+    note: str
+
+@app.on_event("startup")
+async def startup_event():
+    global db_pool
+    print("[Dashboard] Connecting to PostgreSQL...")
+    db_pool = await asyncpg.create_pool(DB_URL)
+    
+    print("[Dashboard] Starting Kafka Consumer background task...")
+    asyncio.create_task(kafka_consumer_task())
+
+@app.on_event("shutdown")
+async def shutdown_event():
+    if db_pool:
+        await db_pool.close()
+
+async def kafka_consumer_task():
+    consumer = AIOKafkaConsumer(
+        KAFKA_TOPIC,
+        bootstrap_servers=KAFKA_BROKER,
+        group_id="zaee_dashboard_group",
+        auto_offset_reset="earliest"
+    )
+    await consumer.start()
+    try:
+        async for msg in consumer:
+            try:
+                payload = json.loads(msg.value.decode("utf-8"))
+                flags = payload.get("flags")
+                if not flags:
+                    continue
+                
+                sensor_id = payload.get("sensor_id")
+                timestamp = payload.get("timestamp")
+                if not timestamp:
+                    timestamp = datetime.now(timezone.utc).isoformat()
+
+                for field_name, flag_type in flags.items():
+                    # Upsert flag into PostgreSQL
+                    query = """
+                        INSERT INTO flags (sensor_id, field_name, flag_type, message, first_detected_at, last_detected_at, acknowledged)
+                        VALUES ($1, $2, $3, $4, $5, $5, false)
+                        ON CONFLICT (sensor_id, field_name, flag_type) WHERE acknowledged = false
+                        DO UPDATE SET last_detected_at = EXCLUDED.last_detected_at
+                        RETURNING id, first_detected_at, last_detected_at;
+                    """
+                    async with db_pool.acquire() as conn:
+                        row = await conn.fetchrow(query, sensor_id, field_name, flag_type, flag_type, datetime.fromisoformat(timestamp.replace('Z', '+00:00')))
+                        
+                        # Publish to SSE
+                        event = {
+                            "type": "flag_upsert",
+                            "data": {
+                                "id": row["id"],
+                                "sensor_id": sensor_id,
+                                "field_name": field_name,
+                                "flag_type": flag_type,
+                                "message": flag_type,
+                                "first_detected_at": row["first_detected_at"].isoformat(),
+                                "last_detected_at": row["last_detected_at"].isoformat(),
+                                "acknowledged": False
+                            }
+                        }
+                        await event_bus.publish(event)
+            except Exception as e:
+                print(f"[Dashboard] Error processing Kafka message: {e}")
+    finally:
+        await consumer.stop()
+
+@app.get("/api/flags")
+async def get_flags(status: Optional[str] = None):
+    async with db_pool.acquire() as conn:
+        if status == "unacknowledged":
+            rows = await conn.fetch("SELECT * FROM flags WHERE acknowledged = false ORDER BY last_detected_at DESC")
+        elif status == "acknowledged":
+            rows = await conn.fetch("SELECT * FROM flags WHERE acknowledged = true ORDER BY acknowledged_at DESC")
+        else:
+            rows = await conn.fetch("SELECT * FROM flags ORDER BY last_detected_at DESC")
+            
+        return [dict(row) for row in rows]
+
+@app.post("/api/flags/{flag_id}/acknowledge")
+async def acknowledge_flag(flag_id: int, req: AcknowledgeRequest):
+    if not req.user or not req.user.strip():
+        raise HTTPException(status_code=400, detail="User is required and cannot be empty")
+    if not req.note or not req.note.strip():
+        raise HTTPException(status_code=400, detail="Note is required and cannot be empty")
+        
+    query = """
+        UPDATE flags
+        SET acknowledged = true,
+            acknowledged_by = $1,
+            note = $2,
+            acknowledged_at = NOW()
+        WHERE id = $3 AND acknowledged = false
+        RETURNING *;
+    """
+    async with db_pool.acquire() as conn:
+        row = await conn.fetchrow(query, req.user.strip(), req.note.strip(), flag_id)
+        
+        if not row:
+            raise HTTPException(status_code=404, detail="Flag not found or already acknowledged")
+            
+        # Publish acknowledgment event to SSE
+        event = {
+            "type": "flag_acknowledged",
+            "data": dict(row)
+        }
+        # Convert datetime to isoformat for JSON serialization
+        for key, val in event["data"].items():
+            if isinstance(val, datetime):
+                event["data"][key] = val.isoformat()
+                
+        await event_bus.publish(event)
+        
+        return event["data"]
+
+@app.get("/api/events")
+async def sse_events(request: Request):
+    async def event_stream():
+        q = event_bus.subscribe()
+        try:
+            while True:
+                # Wait for event or client disconnect
+                event = await q.get()
+                yield f"data: {json.dumps(event)}\n\n"
+        except asyncio.CancelledError:
+            pass
+        finally:
+            event_bus.unsubscribe(q)
+
+    return StreamingResponse(event_stream(), media_type="text/event-stream")
+
+# Mount frontend
+app.mount("/", StaticFiles(directory="../frontend", html=True), name="frontend")

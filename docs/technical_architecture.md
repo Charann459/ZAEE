@@ -10,8 +10,8 @@ This document covers the technical implementation side of the project — langua
 |---|---|---|
 | Core Engine | **Go** | High-throughput, low-latency, concurrent-by-default hot path. Single compiled binary, easy to containerize, no runtime dependency overhead. |
 | Sensor Data Generators | **Python** | Not performance-critical. Fast to write, easy to add randomness, noise, and anomaly injection logic. |
-| Dashboard Backend | **Python (FastAPI)** | Off the hot path. Fast to build CRUD/REST endpoints for flags and acknowledgments. |
-| Dashboard Frontend | **HTML/JS or React** | Purely rendering flags and handling acknowledgment forms. Implementation choice doesn't materially affect the architecture. |
+| Dashboard Backend | **Python (FastAPI + aiokafka)** | Off the hot path. Fast to build CRUD/REST endpoints for flags and acknowledgments. Uses Server-Sent Events (SSE) via `EventBus` for real-time frontend updates. |
+| Dashboard Frontend | **Vanilla HTML/JS/CSS** | Premium aesthetics with glassmorphism, completely native without heavy framework overhead. Connects to the SSE endpoint to stay live. |
 | Message Broker | **Apache Kafka** | Durable, ordered, partition-based ingestion. Industry standard for streaming pipelines, defensible choice for a thesis panel. |
 | State Cache | **Redis** | In-memory store for baseline values, LOCF state, and sensor fusion lookups. Matches the low-latency requirement of the deadband and join logic. |
 | Audit/Flag Storage | **PostgreSQL (or SQLite for dev)** | Relational storage for the flag audit trail — acknowledgment, notes, timestamps. |

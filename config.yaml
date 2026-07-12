@@ -1,0 +1,26 @@
+engine:
+  cold_start:
+    auto_verify: true
+  locf:
+    enabled: true
+  heartbeat:
+    default_interval: 60s
+  default_window: 500ms
+
+sensors:
+  - id: Machine-A
+    tier: standard
+    fields:
+      - name: Temp
+        type: float
+      - name: Pressure
+        type: float
+    deadband:
+      Temp: 0.5
+      Pressure: 1.0
+    heartbeat_interval: 30s
+
+  - id: pressure_relief_valve
+    tier: critical
+    expects_external_heartbeat: true
+    heartbeat_interval: 10s
