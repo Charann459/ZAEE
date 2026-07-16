@@ -14,7 +14,7 @@ from aiokafka import AIOKafkaConsumer
 # Configuration
 KAFKA_BROKER = os.getenv("KAFKA_BROKER", "localhost:9092")
 KAFKA_TOPIC = os.getenv("KAFKA_TOPIC", "zaee_output")
-DB_URL = os.getenv("DB_URL", "postgresql://zaee:password@localhost:5432/zaee")
+DB_URL = os.getenv("DB_URL", "postgresql://zaee:zaee_password@localhost:5432/zaee")
 
 class EventBus:
     def __init__(self):
