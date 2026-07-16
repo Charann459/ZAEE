@@ -46,7 +46,13 @@ The dashboard provides human observability into flagged events (schema drifts, d
 ```bash
 cd dashboard/backend
 python -m venv venv
-source venv/bin/activate  # (or `venv\Scripts\activate` on Windows)
+
+# Activate the virtual environment
+# On Windows (PowerShell):
+.\venv\Scripts\Activate.ps1
+# On macOS/Linux:
+source venv/bin/activate
+
 pip install -r requirements.txt
 
 # Run the FastAPI server on port 8000
