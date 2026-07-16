@@ -25,25 +25,19 @@ The project splits into distinct layers to separate the high-performance hot pat
 
 ## How to Run the Entire Project
 
-### 1. Start the Infrastructure
-The system relies on a Kafka broker, Redis, and PostgreSQL. Spin them all up locally via Docker Compose:
+### 1. Start the Infrastructure & Engine
+The system relies on a Kafka broker, Redis, and PostgreSQL. We have also fully containerized the core engine. Spin them all up locally via Docker Compose:
 ```bash
 cd infra
-docker-compose up -d
+docker-compose up -d --build
 ```
-*(This starts Zookeeper, Kafka, Redis, and Postgres in the background).*
+*(This starts Zookeeper, Kafka, Redis, Postgres, and the **ZAEE Engine** in the background).*
 
-### 2. Start the Core Engine
-The engine subscribes to `zaee_ingest` and applies dynamic schema inference, SDT filtering, tiering, and fusion.
+### 2. View Engine Logs (Optional)
+Since the engine is running inside Docker, you don't need Go installed on your machine. You can view its real-time logs to see it ingesting data:
 ```bash
-cd engine
-# Download Go dependencies
-go mod tidy
-
-# Run the engine
-go run ./cmd/engine
+docker-compose logs -f engine
 ```
-*(The engine is configured via `config.yaml` located in the repository root).*
 
 ### 3. Start the Dashboard (Backend & Frontend)
 The dashboard provides human observability into flagged events (schema drifts, dropped sensors, etc.).
