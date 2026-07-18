@@ -4,7 +4,7 @@ import random
 from confluent_kafka import Producer
 
 def main():
-    p = Producer({'bootstrap.servers': 'kafka:29092'})
+    p = Producer({'bootstrap.servers': 'localhost:9092'})
     
     print("Starting Dropout Simulator (Machine-Dropout)...")
     

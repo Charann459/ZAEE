@@ -72,23 +72,31 @@ With the engine waiting and the dashboard listening, start injecting simulated s
 cd generators
 pip install -r requirements.txt
 
-# Run a specific scenario, such as type oscillation / schema drift:
-python type_oscillation_sim.py
-
-# Or run the standard steady-state generators:
-python run_all.py
+# Run the standard steady-state generators and route to Kafka:
+python run_all.py --kafka
 ```
-*Observe the dashboard to see flags actively emitted (e.g., when the schema drifts or a sensor drops out).*
+*Observe the dashboard to see flags actively emitted when the engine discovers new fields.*
+
+### 5. Triggering Anomalies (Defense Demonstration)
+To intentionally trigger anomaly flags for your presentation, stop `run_all.py` and run the standalone chaos simulators:
+```bash
+# Simulates a sensor dying (triggers LOCF and sensor_dropout flag):
+python dropout_simulator.py
+
+# Simulates schema drift (triggers schema_drift_promoted flag):
+python type_oscillation_sim.py | python stdout_to_kafka.py
+```
 
 ---
 
 ## Running the Tests & Generating Evidence Reports
 
 The project has comprehensive unit, integration, and system tests.
-To run the full suite and generate the Capstone Evidence Report:
+To run the full suite and generate a fresh Capstone Evidence Report (`report.html`):
 ```bash
-cd engine
-docker build --target builder -t zaee-builder .
-docker run --rm zaee-builder go test -v -race ./...
+# 1. Run the test suite inside Docker and save the output as JSON
+docker run --rm zaee-builder go test -v -json ./... > test_results.json
+
+# 2. Parse the JSON to generate the final HTML report
+python files/report_generator.py
 ```
-*(To format the test results into the HTML evidence report, use the provided `report_generator.py` script against the JSON test outputs).*
