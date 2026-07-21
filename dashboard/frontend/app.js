@@ -106,9 +106,11 @@ function renderActiveFlags() {
     
     document.getElementById('active-badge').textContent = activeFlagsState.size;
 
-    const sorted = Array.from(activeFlagsState.values()).sort((a, b) => 
-        new Date(b.last_detected_at) - new Date(a.last_detected_at)
-    );
+    const sorted = Array.from(activeFlagsState.values()).sort((a, b) => {
+        const timeDiff = new Date(b.first_detected_at) - new Date(a.first_detected_at);
+        if (timeDiff !== 0) return timeDiff;
+        return b.id - a.id;
+    });
 
     sorted.forEach(f => {
         const card = document.createElement('div');
