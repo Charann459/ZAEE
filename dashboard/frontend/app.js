@@ -1,5 +1,14 @@
 const activeFlagsState = new Map();
 const auditTrailState = [];
+let renderTimeout = null;
+
+function scheduleRenderFlags() {
+    if (renderTimeout) return;
+    renderTimeout = setTimeout(() => {
+        renderActiveFlags();
+        renderTimeout = null;
+    }, 250);
+}
 
 document.addEventListener("DOMContentLoaded", () => {
     initTabs();
@@ -25,7 +34,7 @@ async function fetchFlags() {
         const resUnack = await fetch('/api/flags?status=unacknowledged');
         const unack = await resUnack.json();
         unack.forEach(f => activeFlagsState.set(f.id, f));
-        renderActiveFlags();
+        scheduleRenderFlags();
 
         const resAck = await fetch('/api/flags?status=acknowledged');
         const ack = await resAck.json();
@@ -42,11 +51,11 @@ function setupSSE() {
         const data = JSON.parse(event.data);
         if (data.type === 'flag_upsert') {
             activeFlagsState.set(data.data.id, data.data);
-            renderActiveFlags();
+            scheduleRenderFlags();
         } else if (data.type === 'flag_acknowledged') {
             activeFlagsState.delete(data.data.id);
             auditTrailState.unshift(data.data);
-            renderActiveFlags();
+            scheduleRenderFlags();
         } else if (data.type === 'stats_update') {
             updateStatsUI(data.data);
         }
