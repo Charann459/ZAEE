@@ -21,19 +21,18 @@ def main():
 
     processes = []
     kafka_proc = None
-    
     try:
-        # If kafka flag is set, start the stdout_to_kafka.py process
         if args.kafka:
             print(f"Kafka mode enabled. Routing output to zaee_ingest topic at {args.broker}...\n")
-            kafka_proc = subprocess.Popen([sys.executable, "stdout_to_kafka.py", "--broker", args.broker], stdin=subprocess.PIPE)
 
         for script in generators:
-            cmd = [sys.executable, script, "--speedup", str(args.speedup)]
+            cmd = [sys.executable, "-u", script, "--speedup", str(args.speedup)]
             
             if args.kafka:
-                # Pipe stdout of generators to the stdin of the kafka producer
+                # Create a dedicated kafka producer process for this generator to avoid interleaving
+                kafka_proc = subprocess.Popen([sys.executable, "stdout_to_kafka.py", "--broker", args.broker], stdin=subprocess.PIPE)
                 p = subprocess.Popen(cmd, stdout=kafka_proc.stdin)
+                processes.append(kafka_proc) # Keep track to terminate
             else:
                 p = subprocess.Popen(cmd)
                 

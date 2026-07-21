@@ -54,7 +54,7 @@ async def main_async(speedup):
     data_dict = {sensor: load_file_data(base_path, sensor) for sensor in all_sensors}
     
     # Assume all files have the same number of cycles (rows), use TS1 as baseline
-    num_cycles = len(data_dict["TS1"]) if "TS1" in data_dict else 0
+    num_cycles = min(len(data_dict["TS1"]), 5) if "TS1" in data_dict else 0
     
     print(f"[Machine-C] Loaded {num_cycles} cycles. Starting streaming at {speedup}x speed...")
     

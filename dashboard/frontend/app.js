@@ -47,12 +47,42 @@ function setupSSE() {
             activeFlagsState.delete(data.data.id);
             auditTrailState.unshift(data.data);
             renderActiveFlags();
-            renderAuditTrail();
+        } else if (data.type === 'stats_update') {
+            updateStatsUI(data.data);
         }
     };
     evtSource.onerror = () => {
         console.error("SSE connection error. Retrying...");
     };
+}
+
+function updateStatsUI(stats) {
+    const ingestRate = stats.ingest_rate;
+    const outputRate = stats.output_rate;
+    const totalIngest = stats.total_ingest;
+    const totalOutput = stats.total_output;
+
+    document.getElementById('val-ingest-rate').textContent = ingestRate;
+    document.getElementById('val-output-rate').textContent = outputRate;
+    document.getElementById('val-ingest-total').textContent = totalIngest.toLocaleString();
+    document.getElementById('val-output-total').textContent = totalOutput.toLocaleString();
+
+    let reduction = 0;
+    if (ingestRate > 0) {
+        reduction = ((ingestRate - outputRate) / ingestRate) * 100;
+    }
+    document.getElementById('val-reduction').textContent = reduction.toFixed(1);
+
+    const AWS_COST_PER_MILLION_MSGS = 1.20; // AWS IoT Core standard messaging
+    const monthlyIngestCost = (ingestRate * 2592000 / 1000000) * AWS_COST_PER_MILLION_MSGS;
+    const monthlyOutputCost = (outputRate * 2592000 / 1000000) * AWS_COST_PER_MILLION_MSGS;
+
+    document.getElementById('val-cost-baseline').textContent = monthlyIngestCost.toFixed(2);
+    document.getElementById('val-cost-zaee').textContent = monthlyOutputCost.toFixed(2);
+
+    const totalSavedMsgs = totalIngest - totalOutput;
+    const totalSavings = (totalSavedMsgs / 1000000) * AWS_COST_PER_MILLION_MSGS;
+    document.getElementById('val-savings-total').textContent = totalSavings.toFixed(4);
 }
 
 function renderActiveFlags() {

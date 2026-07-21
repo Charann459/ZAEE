@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ZAEE Dashboard</title>
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="style.css?v=2">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
 </head>
 <body>
@@ -14,6 +14,7 @@
             <nav class="nav">
                 <button class="tab-btn active" data-target="active-flags">Active Flags <span id="active-badge" class="badge">0</span></button>
                 <button class="tab-btn" data-target="audit-trail">Audit Trail</button>
+                <button class="tab-btn" data-target="cloud-impact">Cloud Impact</button>
             </nav>
         </header>
 
@@ -49,6 +50,51 @@
                         </tbody>
                     </table>
                 </div>
+            </section>
+
+            <section id="cloud-impact" class="tab-content">
+                <div class="section-header">
+                    <h2>Cloud Impact Analysis</h2>
+                    <p>Live calculation of bandwidth and AWS compute cost savings.</p>
+                </div>
+                
+                <div class="metrics-grid">
+                    <div class="metric-card glass">
+                        <h3>Raw Ingest Rate</h3>
+                        <div class="metric-value"><span id="val-ingest-rate">0</span> <small>msg/s</small></div>
+                        <div class="metric-sub">Total: <span id="val-ingest-total">0</span> msgs</div>
+                    </div>
+                    <div class="metric-card glass">
+                        <h3>Compressed Output</h3>
+                        <div class="metric-value"><span id="val-output-rate">0</span> <small>msg/s</small></div>
+                        <div class="metric-sub">Total: <span id="val-output-total">0</span> msgs</div>
+                    </div>
+                    <div class="metric-card glass" style="border-left: 4px solid var(--accent-green)">
+                        <h3>Data Reduction</h3>
+                        <div class="metric-value"><span id="val-reduction">0</span><small>%</small></div>
+                        <div class="metric-sub">Bandwidth saved</div>
+                    </div>
+                </div>
+
+                <div class="metrics-grid" style="margin-top: 20px;">
+                    <div class="metric-card glass" style="opacity: 0.8">
+                        <h3>Est. AWS Cost (Baseline)</h3>
+                        <div class="metric-value">$<span id="val-cost-baseline">0.00</span> <small>/mo</small></div>
+                        <div class="metric-sub">Sending directly to cloud</div>
+                    </div>
+                    <div class="metric-card glass">
+                        <h3>Est. AWS Cost (With ZAEE)</h3>
+                        <div class="metric-value">$<span id="val-cost-zaee">0.00</span> <small>/mo</small></div>
+                        <div class="metric-sub">Using edge filtering</div>
+                    </div>
+                    <div class="metric-card glass" style="border-left: 4px solid var(--accent-green)">
+                        <h3>Total Session Savings</h3>
+                        <div class="metric-value">$<span id="val-savings-total">0.000</span></div>
+                        <div class="metric-sub">Saved since dashboard started</div>
+                    </div>
+                </div>
+                
+                <p class="footnote" style="margin-top: 20px; font-size: 0.8rem; color: #888;">* Based on AWS IoT Core standard messaging pricing ($1.20 per million messages). Assuming 2,592,000 seconds per month.</p>
             </section>
         </main>
     </div>

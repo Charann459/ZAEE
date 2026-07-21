@@ -3,6 +3,7 @@ import json
 import asyncio
 from datetime import datetime, timezone
 from typing import Optional, List
+from collections import deque
 
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import StreamingResponse
@@ -36,6 +37,16 @@ class EventBus:
 event_bus = EventBus()
 db_pool = None
 
+# Stats shared state
+stats_ingest_deque = deque(maxlen=10)
+stats_output_deque = deque(maxlen=10)
+
+current_sec_ingest = 0
+current_sec_output = 0
+
+total_ingest_count = 0
+total_output_count = 0
+
 app = FastAPI(title="ZAEE Dashboard API")
 
 class AcknowledgeRequest(BaseModel):
@@ -50,11 +61,75 @@ async def startup_event():
     
     print("[Dashboard] Starting Kafka Consumer background task...")
     asyncio.create_task(kafka_consumer_task())
+    asyncio.create_task(kafka_ingest_stats_task())
+    asyncio.create_task(kafka_output_stats_task())
+    asyncio.create_task(stats_publisher_task())
 
 @app.on_event("shutdown")
 async def shutdown_event():
     if db_pool:
         await db_pool.close()
+
+async def kafka_ingest_stats_task():
+    global current_sec_ingest, total_ingest_count
+    consumer = AIOKafkaConsumer(
+        "zaee_ingest",
+        bootstrap_servers=KAFKA_BROKER,
+        group_id="zaee_dashboard_stats_ingest",
+        auto_offset_reset="latest"
+    )
+    await consumer.start()
+    try:
+        async for msg in consumer:
+            current_sec_ingest += 1
+            total_ingest_count += 1
+    except Exception as e:
+        print(f"[Dashboard] Ingest stats error: {e}")
+    finally:
+        await consumer.stop()
+
+async def kafka_output_stats_task():
+    global current_sec_output, total_output_count
+    consumer = AIOKafkaConsumer(
+        KAFKA_TOPIC,
+        bootstrap_servers=KAFKA_BROKER,
+        group_id="zaee_dashboard_stats_output",
+        auto_offset_reset="latest"
+    )
+    await consumer.start()
+    try:
+        async for msg in consumer:
+            current_sec_output += 1
+            total_output_count += 1
+    except Exception as e:
+        print(f"[Dashboard] Output stats error: {e}")
+    finally:
+        await consumer.stop()
+
+async def stats_publisher_task():
+    global current_sec_ingest, current_sec_output
+    while True:
+        await asyncio.sleep(1.0)
+        
+        stats_ingest_deque.append(current_sec_ingest)
+        stats_output_deque.append(current_sec_output)
+        
+        current_sec_ingest = 0
+        current_sec_output = 0
+        
+        ingest_rate = sum(stats_ingest_deque) / len(stats_ingest_deque) if len(stats_ingest_deque) > 0 else 0
+        output_rate = sum(stats_output_deque) / len(stats_output_deque) if len(stats_output_deque) > 0 else 0
+        
+        event = {
+            "type": "stats_update",
+            "data": {
+                "ingest_rate": round(ingest_rate, 2),
+                "output_rate": round(output_rate, 2),
+                "total_ingest": total_ingest_count,
+                "total_output": total_output_count
+            }
+        }
+        await event_bus.publish(event)
 
 async def kafka_consumer_task():
     consumer = AIOKafkaConsumer(
