@@ -37,7 +37,10 @@ class EventBus:
 event_bus = EventBus()
 db_pool = None
 
+import time
+
 # Stats shared state
+dashboard_start_time = time.time()
 stats_ingest_deque = deque(maxlen=10)
 stats_output_deque = deque(maxlen=10)
 
@@ -123,6 +126,7 @@ async def stats_publisher_task():
         event = {
             "type": "stats_update",
             "data": {
+                "uptime": time.time() - dashboard_start_time,
                 "ingest_rate": round(ingest_rate, 2),
                 "output_rate": round(output_rate, 2),
                 "total_ingest": total_ingest_count,
@@ -248,5 +252,6 @@ async def sse_events(request: Request):
 
     return StreamingResponse(event_stream(), media_type="text/event-stream")
 
+# Trigger reload
 # Mount frontend
 app.mount("/", StaticFiles(directory="../frontend", html=True), name="frontend")

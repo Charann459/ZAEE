@@ -74,8 +74,14 @@ function updateStatsUI(stats) {
     document.getElementById('val-reduction').textContent = reduction.toFixed(1);
 
     const AWS_COST_PER_MILLION_MSGS = 1.20; // AWS IoT Core standard messaging
-    const monthlyIngestCost = (ingestRate * 2592000 / 1000000) * AWS_COST_PER_MILLION_MSGS;
-    const monthlyOutputCost = (outputRate * 2592000 / 1000000) * AWS_COST_PER_MILLION_MSGS;
+    
+    // Use overall average rate for perfectly stable monthly cost projections
+    const uptime = stats.uptime || 1;
+    const overallIngestRate = totalIngest / uptime;
+    const overallOutputRate = totalOutput / uptime;
+    
+    const monthlyIngestCost = (overallIngestRate * 2592000 / 1000000) * AWS_COST_PER_MILLION_MSGS;
+    const monthlyOutputCost = (overallOutputRate * 2592000 / 1000000) * AWS_COST_PER_MILLION_MSGS;
 
     document.getElementById('val-cost-baseline').textContent = monthlyIngestCost.toFixed(2);
     document.getElementById('val-cost-zaee').textContent = monthlyOutputCost.toFixed(2);
