@@ -75,39 +75,51 @@ async def shutdown_event():
 
 async def kafka_ingest_stats_task():
     global current_sec_ingest, total_ingest_count
-    consumer = AIOKafkaConsumer(
-        "zaee_ingest",
-        bootstrap_servers=KAFKA_BROKER,
-        group_id="zaee_dashboard_stats_ingest",
-        auto_offset_reset="latest"
-    )
-    await consumer.start()
-    try:
-        async for msg in consumer:
-            current_sec_ingest += 1
-            total_ingest_count += 1
-    except Exception as e:
-        print(f"[Dashboard] Ingest stats error: {e}")
-    finally:
-        await consumer.stop()
+    while True:
+        consumer = AIOKafkaConsumer(
+            "zaee_ingest",
+            bootstrap_servers=KAFKA_BROKER,
+            group_id="zaee_dashboard_stats_ingest",
+            auto_offset_reset="latest"
+        )
+        try:
+            await consumer.start()
+            print("[Dashboard] Ingest stats consumer connected.")
+            async for msg in consumer:
+                current_sec_ingest += 1
+                total_ingest_count += 1
+        except Exception as e:
+            print(f"[Dashboard] Ingest stats lost connection: {e}. Reconnecting in 5s...")
+        finally:
+            try:
+                await consumer.stop()
+            except Exception:
+                pass
+        await asyncio.sleep(5)
 
 async def kafka_output_stats_task():
     global current_sec_output, total_output_count
-    consumer = AIOKafkaConsumer(
-        KAFKA_TOPIC,
-        bootstrap_servers=KAFKA_BROKER,
-        group_id="zaee_dashboard_stats_output",
-        auto_offset_reset="latest"
-    )
-    await consumer.start()
-    try:
-        async for msg in consumer:
-            current_sec_output += 1
-            total_output_count += 1
-    except Exception as e:
-        print(f"[Dashboard] Output stats error: {e}")
-    finally:
-        await consumer.stop()
+    while True:
+        consumer = AIOKafkaConsumer(
+            KAFKA_TOPIC,
+            bootstrap_servers=KAFKA_BROKER,
+            group_id="zaee_dashboard_stats_output",
+            auto_offset_reset="latest"
+        )
+        try:
+            await consumer.start()
+            print("[Dashboard] Output stats consumer connected.")
+            async for msg in consumer:
+                current_sec_output += 1
+                total_output_count += 1
+        except Exception as e:
+            print(f"[Dashboard] Output stats lost connection: {e}. Reconnecting in 5s...")
+        finally:
+            try:
+                await consumer.stop()
+            except Exception:
+                pass
+        await asyncio.sleep(5)
 
 async def stats_publisher_task():
     global current_sec_ingest, current_sec_output
@@ -136,57 +148,65 @@ async def stats_publisher_task():
         await event_bus.publish(event)
 
 async def kafka_consumer_task():
-    consumer = AIOKafkaConsumer(
-        KAFKA_TOPIC,
-        bootstrap_servers=KAFKA_BROKER,
-        group_id="zaee_dashboard_group",
-        auto_offset_reset="earliest"
-    )
-    await consumer.start()
-    try:
-        async for msg in consumer:
-            try:
-                payload = json.loads(msg.value.decode("utf-8"))
-                flags = payload.get("flags")
-                if not flags:
-                    continue
-                
-                sensor_id = payload.get("sensor_id")
-                timestamp = payload.get("timestamp")
-                if not timestamp:
-                    timestamp = datetime.now(timezone.utc).isoformat()
+    while True:
+        consumer = AIOKafkaConsumer(
+            KAFKA_TOPIC,
+            bootstrap_servers=KAFKA_BROKER,
+            group_id="zaee_dashboard_group",
+            auto_offset_reset="earliest"
+        )
+        try:
+            await consumer.start()
+            print("[Dashboard] Flag consumer connected.")
+            async for msg in consumer:
+                try:
+                    payload = json.loads(msg.value.decode("utf-8"))
+                    flags = payload.get("flags")
+                    if not flags:
+                        continue
+                    
+                    sensor_id = payload.get("sensor_id")
+                    timestamp = payload.get("timestamp")
+                    if not timestamp:
+                        timestamp = datetime.now(timezone.utc).isoformat()
 
-                for field_name, flag_type in flags.items():
-                    # Upsert flag into PostgreSQL
-                    query = """
-                        INSERT INTO flags (sensor_id, field_name, flag_type, message, first_detected_at, last_detected_at, acknowledged)
-                        VALUES ($1, $2, $3, $4, $5, $5, false)
-                        ON CONFLICT (sensor_id, field_name, flag_type) WHERE acknowledged = false
-                        DO UPDATE SET last_detected_at = EXCLUDED.last_detected_at
-                        RETURNING id, first_detected_at, last_detected_at;
-                    """
-                    async with db_pool.acquire() as conn:
-                        row = await conn.fetchrow(query, sensor_id, field_name, flag_type, flag_type, datetime.fromisoformat(timestamp.replace('Z', '+00:00')))
-                        
-                        # Publish to SSE
-                        event = {
-                            "type": "flag_upsert",
-                            "data": {
-                                "id": row["id"],
-                                "sensor_id": sensor_id,
-                                "field_name": field_name,
-                                "flag_type": flag_type,
-                                "message": flag_type,
-                                "first_detected_at": row["first_detected_at"].isoformat(),
-                                "last_detected_at": row["last_detected_at"].isoformat(),
-                                "acknowledged": False
+                    for field_name, flag_type in flags.items():
+                        # Upsert flag into PostgreSQL
+                        query = """
+                            INSERT INTO flags (sensor_id, field_name, flag_type, message, first_detected_at, last_detected_at, acknowledged)
+                            VALUES ($1, $2, $3, $4, $5, $5, false)
+                            ON CONFLICT (sensor_id, field_name, flag_type) WHERE acknowledged = false
+                            DO UPDATE SET last_detected_at = EXCLUDED.last_detected_at
+                            RETURNING id, first_detected_at, last_detected_at;
+                        """
+                        async with db_pool.acquire() as conn:
+                            row = await conn.fetchrow(query, sensor_id, field_name, flag_type, flag_type, datetime.fromisoformat(timestamp.replace('Z', '+00:00')))
+                            
+                            # Publish to SSE
+                            event = {
+                                "type": "flag_upsert",
+                                "data": {
+                                    "id": row["id"],
+                                    "sensor_id": sensor_id,
+                                    "field_name": field_name,
+                                    "flag_type": flag_type,
+                                    "message": flag_type,
+                                    "first_detected_at": row["first_detected_at"].isoformat(),
+                                    "last_detected_at": row["last_detected_at"].isoformat(),
+                                    "acknowledged": False
+                                }
                             }
-                        }
-                        await event_bus.publish(event)
-            except Exception as e:
-                print(f"[Dashboard] Error processing Kafka message: {e}")
-    finally:
-        await consumer.stop()
+                            await event_bus.publish(event)
+                except Exception as e:
+                    print(f"[Dashboard] Error processing Kafka message: {e}")
+        except Exception as e:
+            print(f"[Dashboard] Flag consumer lost connection: {e}. Reconnecting in 5s...")
+        finally:
+            try:
+                await consumer.stop()
+            except Exception:
+                pass
+        await asyncio.sleep(5)
 
 @app.get("/api/flags")
 async def get_flags(status: Optional[str] = None):
@@ -255,3 +275,4 @@ async def sse_events(request: Request):
 # Trigger reload
 # Mount frontend
 app.mount("/", StaticFiles(directory="../frontend", html=True), name="frontend")
+# Reloading after system restart
