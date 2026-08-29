@@ -114,7 +114,9 @@ function renderActiveFlags() {
 
     sorted.forEach(f => {
         const card = document.createElement('div');
-        card.className = 'flag-card glass';
+        // Extract base flag type (e.g. "schema_drift" from "schema_drift: expected float...")
+        const baseType = f.flag_type.split(':')[0].trim().replace(/\s+/g, '_');
+        card.className = `flag-card glass type-${baseType}`;
         card.onclick = () => openModal(f);
         
         const title = f.field_name ? `${f.sensor_id} : ${f.field_name}` : f.sensor_id;
