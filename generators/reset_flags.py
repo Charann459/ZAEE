@@ -4,37 +4,59 @@ reset_flags.py
 Clears all unacknowledged flags from the PostgreSQL database.
 Run this before a fresh demo to start with a clean slate.
 
-Usage (from the generators/ or project root):
+Usage:
     python reset_flags.py
 """
 
-import asyncio
-import asyncpg
-import os
+import subprocess
+import sys
 
-DB_URL = os.getenv('DB_URL', 'postgresql://zaee:zaee_password@localhost:5432/zaee')
+def main():
+    print('[Reset] Counting unacknowledged flags...')
 
-async def main():
-    print('[Reset] Connecting to PostgreSQL...')
-    conn = await asyncpg.connect(DB_URL)
-    
-    count = await conn.fetchval("SELECT COUNT(*) FROM flags WHERE acknowledged = false")
+    # Use docker exec to run psql - no Python DB drivers needed
+    count_result = subprocess.run(
+        [
+            'docker', 'exec', 'postgres',
+            'psql', '-U', 'zaee', '-d', 'zaee',
+            '-t', '-c', 'SELECT COUNT(*) FROM flags WHERE acknowledged = false;'
+        ],
+        capture_output=True, text=True
+    )
+
+    if count_result.returncode != 0:
+        print(f'[Reset] ERROR: Could not connect to PostgreSQL.')
+        print(f'        Make sure Docker is running: docker-compose up -d')
+        print(count_result.stderr)
+        sys.exit(1)
+
+    count = count_result.stdout.strip()
     print(f'[Reset] Found {count} unacknowledged flags.')
-    
-    if count == 0:
+
+    if count == '0':
         print('[Reset] Nothing to clear. Dashboard is already clean!')
-        await conn.close()
         return
 
     confirm = input(f'[Reset] Delete all {count} unacknowledged flags? (yes/no): ').strip().lower()
     if confirm != 'yes':
         print('[Reset] Cancelled.')
-        await conn.close()
         return
 
-    deleted = await conn.execute("DELETE FROM flags WHERE acknowledged = false")
-    print(f'[Reset] Done! Cleared {count} flags. Dashboard is now clean for a fresh demo.')
-    await conn.close()
+    delete_result = subprocess.run(
+        [
+            'docker', 'exec', 'postgres',
+            'psql', '-U', 'zaee', '-d', 'zaee',
+            '-c', 'DELETE FROM flags WHERE acknowledged = false;'
+        ],
+        capture_output=True, text=True
+    )
+
+    if delete_result.returncode == 0:
+        print(f'[Reset] Done! Cleared {count} flags. Dashboard is now clean for a fresh demo.')
+    else:
+        print(f'[Reset] ERROR during delete:')
+        print(delete_result.stderr)
+        sys.exit(1)
 
 if __name__ == '__main__':
-    asyncio.run(main())
+    main()
