@@ -4,7 +4,7 @@
 
 A real-time, middleware-deployed ETL engine that utilizes dynamic schema inference to ingest heterogeneous data streams, applying deadband compression and priority-tiered filtering to eliminate redundant data, reduce cloud transmission overhead, and deliver normalized, enriched payloads — without any assumption about the upstream source or downstream destination.
 
-> **Implementation Note (Phase 10 Complete):** This design document reflects the original architectural intent. Over the course of the project (Phases 1-10), certain decisions evolved. Specifically: Schema Drift employs a 25-sample checklist and oscillation prevention; LOCF uses a hard timeout to prevent staleness; the Dashboard is built with FastAPI/SSE rather than a Go backend. For defense preparation and exact implementation details, please see `docs/defense_prep.md` and `docs/technical_architecture.md`.
+**Implementation Note (Phase 10 Complete):** This design document reflects the original architectural intent. Over the course of the project (Phases 1-10), certain decisions evolved. Specifically: Schema Drift employs a 25-sample checklist and oscillation prevention; LOCF uses a hard timeout to prevent staleness; the Dashboard is built with FastAPI/SSE rather than a Go backend. For defense preparation and exact implementation details, please see `docs/defense_prep.md` and `docs/technical_architecture.md`.
 
 ---
 

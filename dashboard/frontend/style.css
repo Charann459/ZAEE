@@ -143,14 +143,14 @@ body {
     margin-bottom: 0.5rem;
 }
 
-/* Flag type color coding */
-.flag-card.type-sensor_dropout       { --flag-color: #ff4d4d; } /* red   - sensor died      */
-.flag-card.type-locf_gap_filled      { --flag-color: #f59e0b; } /* amber - LOCF gap filled  */
-.flag-card.type-field_unavailable    { --flag-color: #f97316; } /* orange - field missing   */
-.flag-card.type-schema_drift         { --flag-color: #a78bfa; } /* purple - type changed    */
-.flag-card.type-schema_drift_promoted { --flag-color: #8b5cf6; } /* violet - type promoted  */
-.flag-card.type-value_outlier        { --flag-color: #38bdf8; } /* sky   - out of range     */
-.flag-card.type-heartbeat            { --flag-color: #34d399; } /* green - heartbeat        */
+/* Flag type color coding - each type has a very distinct color */
+.flag-card.type-sensor_dropout        { --flag-color: #ff4d4d; } /* RED    - sensor died       */
+.flag-card.type-locf_gap_filled       { --flag-color: #38bdf8; } /* BLUE   - LOCF gap filled   */
+.flag-card.type-field_unavailable     { --flag-color: #f59e0b; } /* AMBER  - field missing     */
+.flag-card.type-schema_drift          { --flag-color: #a78bfa; } /* PURPLE - type changed      */
+.flag-card.type-schema_drift_promoted { --flag-color: #34d399; } /* GREEN  - type promoted     */
+.flag-card.type-value_outlier         { --flag-color: #fb923c; } /* ORANGE - out of range      */
+.flag-card.type-heartbeat             { --flag-color: #4ade80; } /* LIME   - heartbeat         */
 
 .flag-sensor {
     font-size: 1.2rem;
