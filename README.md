@@ -72,6 +72,10 @@ With the engine waiting and the dashboard listening, start injecting simulated s
 cd generators
 pip install -r requirements.txt
 
+# (Recommended) Clear previous anomalies before a fresh demo run:
+python reset_flags.py
+# Type "yes" when prompted — this wipes old flags from the database so the dashboard starts clean.
+
 # Run the standard steady-state generators and route to Kafka:
 python run_all.py --kafka
 ```
@@ -81,10 +85,30 @@ python run_all.py --kafka
 To intentionally trigger anomaly flags for your presentation, stop `run_all.py` and run the standalone chaos simulators:
 ```bash
 # Simulates a sensor dying (triggers LOCF and sensor_dropout flag):
-python dropout_simulator.py
+python dropout_simulator.py | python stdout_to_kafka.py
 
 # Simulates schema drift (triggers schema_drift_promoted flag):
 python type_oscillation_sim.py | python stdout_to_kafka.py
+```
+
+### 6. Panel Demo — Using the New Scenario Dataset
+For a panel interview where they ask *"show us this with a different dataset"*, use the purpose-built scenario generator.
+It streams **42 structured scenarios** covering every engine behaviour (schema drift, sensor dropout, tier bypass, etc.)
+using **completely different sensor IDs** — so all anomalies on the dashboard will be fresh and genuinely new.
+```bash
+# Reset dashboard first:
+python reset_flags.py
+
+# Stream ALL 42 scenarios:
+python generator_scenario.py | python stdout_to_kafka.py
+
+# Or stream only a specific category to answer a panel question:
+python generator_scenario.py --category "Schema Drift" | python stdout_to_kafka.py
+python generator_scenario.py --category "Flags" | python stdout_to_kafka.py
+python generator_scenario.py --category "Deadband" | python stdout_to_kafka.py
+
+# List all available scenarios:
+python generator_scenario.py --list
 ```
 
 ---
