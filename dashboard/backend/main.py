@@ -152,8 +152,8 @@ async def kafka_consumer_task():
         consumer = AIOKafkaConsumer(
             KAFKA_TOPIC,
             bootstrap_servers=KAFKA_BROKER,
-            group_id="zaee_dashboard_group",
-            auto_offset_reset="earliest"
+            group_id=f"zaee_dashboard_group_{time.time()}",
+            auto_offset_reset="latest"  # Only process NEW messages - DB is source of truth for history
         )
         try:
             await consumer.start()
