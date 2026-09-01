@@ -1,3 +1,4 @@
+import sys
 import os
 import json
 import time
@@ -24,13 +25,13 @@ def main():
     labels_file = os.path.join(base_path, "secom_labels.data")
     
     if not os.path.exists(data_file) or not os.path.exists(labels_file):
-        print(f"Error: SECOM Dataset not found at {base_path}")
+        print(f"Error: SECOM Dataset not found at {base_path}", file=sys.stderr, flush=True)
         return
 
     base_sleep = 1.0 / args.rate
     actual_sleep = base_sleep / args.speedup
 
-    print(f"[SECOM] Starting generator at {args.rate}Hz (Speedup: {args.speedup}x)")
+    print(f"[SECOM] Starting generator at {args.rate}Hz (Speedup: {args.speedup}x)", file=sys.stderr, flush=True)
 
     try:
         with open(data_file, 'r') as f_data, open(labels_file, 'r') as f_labels:
@@ -61,7 +62,7 @@ def main():
                 time.sleep(actual_sleep)
                 
     except KeyboardInterrupt:
-        print("\n[SECOM] Stopped manually.")
+        print("\n[SECOM] Stopped manually.", file=sys.stderr, flush=True)
 
 if __name__ == "__main__":
     main()

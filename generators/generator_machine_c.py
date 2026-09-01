@@ -1,3 +1,4 @@
+import sys
 import os
 import json
 import asyncio
@@ -49,17 +50,17 @@ async def stream_frequency_group(group_name, sensors, data_dict, cycle_index, hz
 async def main_async(speedup):
     base_path = os.path.join(os.path.dirname(__file__), "..", "Sample Data", "Machine-C")
     
-    print(f"[Machine-C] Loading dataset from {base_path}...")
+    print(f"[Machine-C] Loading dataset from {base_path}...", file=sys.stderr, flush=True)
     all_sensors = SENSORS_100HZ + SENSORS_10HZ + SENSORS_1HZ
     data_dict = {sensor: load_file_data(base_path, sensor) for sensor in all_sensors}
     
     # Assume all files have the same number of cycles (rows), use TS1 as baseline
     num_cycles = min(len(data_dict["TS1"]), 5) if "TS1" in data_dict else 0
     
-    print(f"[Machine-C] Loaded {num_cycles} cycles. Starting streaming at {speedup}x speed...")
+    print(f"[Machine-C] Loaded {num_cycles} cycles. Starting streaming at {speedup}x speed...", file=sys.stderr, flush=True)
     
     for cycle_index in range(num_cycles):
-        print(f"[Machine-C] --- Starting Cycle {cycle_index + 1}/{num_cycles} ---")
+        print(f"[Machine-C] --- Starting Cycle {cycle_index + 1}/{num_cycles} ---", file=sys.stderr, flush=True)
         
         # Run all frequency groups concurrently for this 60s cycle
         await asyncio.gather(
@@ -67,7 +68,7 @@ async def main_async(speedup):
             stream_frequency_group("10Hz", SENSORS_10HZ, data_dict, cycle_index, 10, speedup),
             stream_frequency_group("1Hz", SENSORS_1HZ, data_dict, cycle_index, 1, speedup)
         )
-        print(f"[Machine-C] --- Finished Cycle {cycle_index + 1} ---")
+        print(f"[Machine-C] --- Finished Cycle {cycle_index + 1} ---", file=sys.stderr, flush=True)
 
 def main():
     parser = argparse.ArgumentParser(description="Machine C Stream Generator")
@@ -77,7 +78,7 @@ def main():
     try:
         asyncio.run(main_async(args.speedup))
     except KeyboardInterrupt:
-        print("\n[Machine-C] Stopped manually.")
+        print("\n[Machine-C] Stopped manually.", file=sys.stderr, flush=True)
 
 if __name__ == "__main__":
     main()

@@ -52,11 +52,11 @@ def main():
     scenarios = dataset.get('scenarios', [])
 
     if args.list:
-        print(f"\nDataset: {dataset['dataset_name']} (v{dataset['version']})")
-        print(f"Total scenarios: {dataset['total_scenarios']}\n")
+        print(f"\nDataset: {dataset['dataset_name']} (v{dataset['version']})", file=sys.stderr, flush=True)
+        print(f"Total scenarios: {dataset['total_scenarios']}\n", file=sys.stderr, flush=True)
         for s in scenarios:
-            print(f"  [{s['category']}]  {s['scenario']}")
-        print()
+            print(f"  [{s['category']}]  {s['scenario']}", file=sys.stderr, flush=True)
+        print(, file=sys.stderr, flush=True)
         return
 
     if args.category:

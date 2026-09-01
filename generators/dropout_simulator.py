@@ -1,3 +1,4 @@
+import sys
 import json
 import time
 import random
@@ -6,10 +7,10 @@ from confluent_kafka import Producer
 def main():
     p = Producer({'bootstrap.servers': 'localhost:9092'})
     
-    print("Starting Dropout Simulator (Machine-Dropout)...")
+    print("Starting Dropout Simulator (Machine-Dropout)...", file=sys.stderr, flush=True)
     
     # Phase 1: Send noisy data to pass cold start
-    print("Phase 1: Noisy data to pass cold start (100 samples)")
+    print("Phase 1: Noisy data to pass cold start (100 samples)", file=sys.stderr, flush=True)
     for i in range(100):
         data = {
             "sensor_id": "Machine-Dropout",
@@ -23,7 +24,7 @@ def main():
         time.sleep(0.1)
         
     p.flush()
-    print("Cold start should be complete. Now sending FLAT data.")
+    print("Cold start should be complete. Now sending FLAT data.", file=sys.stderr, flush=True)
     
     # Phase 2: Send perfectly flat data. The engine should suppress this via SDT,
     # except for the periodic Heartbeat! (Default 60s, so we run for 80s)
@@ -40,7 +41,7 @@ def main():
         time.sleep(0.1)
         
     p.flush()
-    print("Done!")
+    print("Done!", file=sys.stderr, flush=True)
 
 if __name__ == "__main__":
     main()

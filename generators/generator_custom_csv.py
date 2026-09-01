@@ -48,13 +48,13 @@ def preview_csv(filepath: str):
                 break
             rows.append(row)
 
-    print(f"\\nFile: {filepath}")
-    print(f"Columns ({len(columns)} total):")
+    print(f"\\nFile: {filepath}", file=sys.stderr, flush=True)
+    print(f"Columns ({len(columns)} total):", file=sys.stderr, flush=True)
     for col in columns:
         sample = rows[0].get(col, '') if rows else ''
-        print(f"  - {col!r:<35} sample: {sample!r}")
+        print(f"  - {col!r:<35} sample: {sample!r}", file=sys.stderr, flush=True)
 
-    print(f"\\nFirst row as ZAEE payload (auto-detected numeric fields):")
+    print(f"\\nFirst row as ZAEE payload (auto-detected numeric fields):", file=sys.stderr, flush=True)
     if rows:
         numeric_fields = {}
         for k, v in rows[0].items():
@@ -68,8 +68,8 @@ def preview_csv(filepath: str):
             "fields": numeric_fields
         }, indent=2))
 
-    print(f"\\nRun command:")
-    print(f'  python generator_custom_csv.py --file "{filepath}" --sensor-id "my_sensor" | python stdout_to_kafka.py')
+    print(f"\\nRun command:", file=sys.stderr, flush=True)
+    print(f'  python generator_custom_csv.py --file "{filepath}" --sensor-id "my_sensor" | python stdout_to_kafka.py', file=sys.stderr, flush=True)
 
 
 def stream_csv(filepath, sensor_id, sensor_col, field_names, delay, max_rows):

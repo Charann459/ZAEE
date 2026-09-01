@@ -1,3 +1,4 @@
+import sys
 import os
 import csv
 import json
@@ -14,13 +15,13 @@ def main():
     data_path = os.path.join(os.path.dirname(__file__), "..", "Sample Data", "Machine-B", "Large_Industrial_Pump_Maintenance_Dataset.csv")
     
     if not os.path.exists(data_path):
-        print(f"Error: Dataset not found at {data_path}")
+        print(f"Error: Dataset not found at {data_path}", file=sys.stderr, flush=True)
         return
 
     base_sleep = 1.0 / args.rate
     actual_sleep = base_sleep / args.speedup
 
-    print(f"[Machine-B] Starting generator at {args.rate}Hz (Speedup: {args.speedup}x)")
+    print(f"[Machine-B] Starting generator at {args.rate}Hz (Speedup: {args.speedup}x)", file=sys.stderr, flush=True)
 
     try:
         with open(data_path, 'r') as f:
@@ -42,7 +43,7 @@ def main():
                 time.sleep(actual_sleep)
                 
     except KeyboardInterrupt:
-        print("\n[Machine-B] Stopped manually.")
+        print("\n[Machine-B] Stopped manually.", file=sys.stderr, flush=True)
 
 if __name__ == "__main__":
     main()
