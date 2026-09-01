@@ -42,7 +42,7 @@ async def stream_frequency_group(group_name, sensors, data_dict, cycle_index, hz
                 "timestamp": datetime.now(timezone.utc).isoformat(),
                 "fields": fields
             }
-            print(json.dumps(payload))
+            print(json.dumps(payload), flush=True)
             
         await asyncio.sleep(sleep_time)
 

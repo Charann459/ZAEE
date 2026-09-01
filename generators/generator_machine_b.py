@@ -38,7 +38,7 @@ def main():
                     "target_label": {"Maintenance_Flag": int(row['Maintenance_Flag'])}
                 }
                 
-                print(json.dumps(payload))
+                print(json.dumps(payload), flush=True)
                 time.sleep(actual_sleep)
                 
     except KeyboardInterrupt:

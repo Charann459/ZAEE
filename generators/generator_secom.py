@@ -57,7 +57,7 @@ def main():
                     "target_label": {"Fail": 1 if fail_flag == 1 else 0}
                 }
                 
-                print(json.dumps(payload))
+                print(json.dumps(payload), flush=True)
                 time.sleep(actual_sleep)
                 
     except KeyboardInterrupt:

@@ -36,7 +36,7 @@ def main():
                         "fields": {k: v},
                         "target_label": {"Fault_Type": int(row['Fault_Type'])}
                     }
-                    print(json.dumps(payload))
+                    print(json.dumps(payload), flush=True)
                     time.sleep(0.01) # 10ms jitter between fields
                 
                 # Sleep the remainder of the actual_sleep
