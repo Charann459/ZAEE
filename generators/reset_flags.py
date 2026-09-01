@@ -1,4 +1,4 @@
-﻿"""
+"""
 reset_flags.py
 --------------
 Clears all unacknowledged flags from the PostgreSQL database.
@@ -10,8 +10,18 @@ Usage:
 
 import subprocess
 import sys
+import urllib.request
+import urllib.error
 
 def main():
+    print('[Reset] Calling dashboard API to reset Cloud Impact stats...')
+    try:
+        req = urllib.request.Request('http://localhost:8000/api/stats/reset', method='POST')
+        urllib.request.urlopen(req)
+        print('[Reset] Cloud Impact stats reset successfully.')
+    except urllib.error.URLError as e:
+        print(f'[Reset] WARNING: Could not connect to dashboard API to reset stats: {e}')
+
     print('[Reset] Counting unacknowledged flags...')
 
     # Use docker exec to run psql - no Python DB drivers needed

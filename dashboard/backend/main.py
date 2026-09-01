@@ -256,6 +256,21 @@ async def acknowledge_flag(flag_id: int, req: AcknowledgeRequest):
         
         return event["data"]
 
+@app.post("/api/stats/reset")
+async def reset_stats():
+    global current_sec_ingest, current_sec_output, total_ingest_count, total_output_count, dashboard_start_time
+    
+    current_sec_ingest = 0
+    current_sec_output = 0
+    total_ingest_count = 0
+    total_output_count = 0
+    dashboard_start_time = time.time()
+    
+    stats_ingest_deque.clear()
+    stats_output_deque.clear()
+    
+    return {"status": "success", "message": "Cloud impact stats reset."}
+
 @app.get("/api/events")
 async def sse_events(request: Request):
     async def event_stream():
