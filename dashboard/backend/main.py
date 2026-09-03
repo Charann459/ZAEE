@@ -269,7 +269,10 @@ async def reset_stats():
     stats_ingest_deque.clear()
     stats_output_deque.clear()
     
-    return {"status": "success", "message": "Cloud impact stats reset."}
+    # Broadcast to all connected browsers to clear their in-memory flag state
+    await event_bus.publish({"type": "flags_reset"})
+    
+    return {"status": "success", "message": "Cloud impact stats reset and browser state cleared."}
 
 @app.get("/api/events")
 async def sse_events(request: Request):

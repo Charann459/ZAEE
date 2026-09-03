@@ -20,6 +20,34 @@ sensors:
       Pressure: 1.0
     heartbeat_interval: 30s
 
+  # Machine-B: Industrial Pump dataset (5 pump IDs)
+  - id: Machine-B_Pump_1
+    tier: standard
+    heartbeat_interval: 60s
+  - id: Machine-B_Pump_2
+    tier: standard
+    heartbeat_interval: 60s
+  - id: Machine-B_Pump_3
+    tier: standard
+    heartbeat_interval: 60s
+  - id: Machine-B_Pump_4
+    tier: standard
+    heartbeat_interval: 60s
+  - id: Machine-B_Pump_5
+    tier: standard
+    heartbeat_interval: 60s
+
+  # Machine-C: Hydraulic System dataset (multi-frequency sensor groups)
+  - id: Machine-C_100Hz
+    tier: standard
+    heartbeat_interval: 120s
+  - id: Machine-C_10Hz
+    tier: standard
+    heartbeat_interval: 120s
+  - id: Machine-C_1Hz
+    tier: standard
+    heartbeat_interval: 120s
+
   - id: pressure_relief_valve
     tier: critical
     expects_external_heartbeat: true

@@ -1,6 +1,7 @@
 const activeFlagsState = new Map();
 const auditTrailState = [];
 let renderTimeout = null;
+let lastKnownStats = null; // Freeze stats at last non-zero values
 
 function scheduleRenderFlags() {
     if (renderTimeout) return;
@@ -56,6 +57,13 @@ function setupSSE() {
             activeFlagsState.delete(data.data.id);
             auditTrailState.unshift(data.data);
             scheduleRenderFlags();
+        } else if (data.type === 'flags_reset') {
+            // Dashboard was reset - clear all frontend state immediately
+            activeFlagsState.clear();
+            auditTrailState.length = 0;
+            lastKnownStats = null;
+            renderActiveFlags();
+            renderAuditTrail();
         } else if (data.type === 'stats_update') {
             updateStatsUI(data.data);
         }
@@ -71,23 +79,31 @@ function updateStatsUI(stats) {
     const totalIngest = stats.total_ingest;
     const totalOutput = stats.total_output;
 
-    document.getElementById('val-ingest-rate').textContent = ingestRate;
-    document.getElementById('val-output-rate').textContent = outputRate;
-    document.getElementById('val-ingest-total').textContent = totalIngest.toLocaleString();
-    document.getElementById('val-output-total').textContent = totalOutput.toLocaleString();
+    // Freeze display at last known non-zero values so stats don't decay to 0 after generator stops
+    if (ingestRate > 0 || totalIngest > 0) {
+        lastKnownStats = stats;
+    }
+    const displayStats = lastKnownStats || stats;
+    const displayIngestRate = displayStats.ingest_rate;
+    const displayOutputRate = displayStats.output_rate;
+    const displayTotalIngest = displayStats.total_ingest;
+    const displayTotalOutput = displayStats.total_output;
+
+    document.getElementById('val-ingest-rate').textContent = displayIngestRate;
+    document.getElementById('val-output-rate').textContent = displayOutputRate;
+    document.getElementById('val-ingest-total').textContent = displayTotalIngest.toLocaleString();
+    document.getElementById('val-output-total').textContent = displayTotalOutput.toLocaleString();
 
     let reduction = 0;
-    if (ingestRate > 0) {
-        reduction = ((ingestRate - outputRate) / ingestRate) * 100;
+    if (displayIngestRate > 0) {
+        reduction = ((displayIngestRate - displayOutputRate) / displayIngestRate) * 100;
     }
     document.getElementById('val-reduction').textContent = reduction.toFixed(1);
 
-    const AWS_COST_PER_MILLION_MSGS = 1.20; // AWS IoT Core standard messaging
-    
-    // Use overall average rate for perfectly stable monthly cost projections
-    const uptime = stats.uptime || 1;
-    const overallIngestRate = totalIngest / uptime;
-    const overallOutputRate = totalOutput / uptime;
+    const AWS_COST_PER_MILLION_MSGS = 1.20;
+    const uptime = displayStats.uptime || 1;
+    const overallIngestRate = displayTotalIngest / uptime;
+    const overallOutputRate = displayTotalOutput / uptime;
     
     const monthlyIngestCost = (overallIngestRate * 2592000 / 1000000) * AWS_COST_PER_MILLION_MSGS;
     const monthlyOutputCost = (overallOutputRate * 2592000 / 1000000) * AWS_COST_PER_MILLION_MSGS;
@@ -95,7 +111,7 @@ function updateStatsUI(stats) {
     document.getElementById('val-cost-baseline').textContent = monthlyIngestCost.toFixed(2);
     document.getElementById('val-cost-zaee').textContent = monthlyOutputCost.toFixed(2);
 
-    const totalSavedMsgs = totalIngest - totalOutput;
+    const totalSavedMsgs = displayTotalIngest - displayTotalOutput;
     const totalSavings = (totalSavedMsgs / 1000000) * AWS_COST_PER_MILLION_MSGS;
     document.getElementById('val-savings-total').textContent = totalSavings.toFixed(4);
 }
