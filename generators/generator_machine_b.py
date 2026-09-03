@@ -5,12 +5,16 @@ import json
 import time
 import argparse
 from datetime import datetime, timezone
+from kafka_helper import KafkaHelper
 
 def main():
     parser = argparse.ArgumentParser(description="Machine B Stream Generator")
     parser.add_argument("--speedup", type=float, default=1.0, help="Speed multiplier (default: 1.0)")
     parser.add_argument("--rate", type=float, default=2.0, help="Base Hz emission rate (default: 2.0)")
+    parser.add_argument("--kafka", action="store_true", help="Produce directly to Kafka instead of printing to stdout")
     args = parser.parse_args()
+
+    kh = KafkaHelper(kafka_mode=args.kafka)
 
     data_path = os.path.join(os.path.dirname(__file__), "..", "Sample Data", "Machine-B", "Large_Industrial_Pump_Maintenance_Dataset.csv")
     
@@ -39,11 +43,13 @@ def main():
                     "target_label": {"Maintenance_Flag": int(row['Maintenance_Flag'])}
                 }
                 
-                print(json.dumps(payload), flush=True)
+                kh.emit(payload)
                 time.sleep(actual_sleep)
                 
     except KeyboardInterrupt:
         print("\n[Machine-B] Stopped manually.", file=sys.stderr, flush=True)
+    finally:
+        kh.flush()
 
 if __name__ == "__main__":
     main()
